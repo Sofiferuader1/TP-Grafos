@@ -7,32 +7,30 @@ import heapq
 
 grafo = {}
 
-
+# Creo un vértice para representar un ambiente de la casa.
 def agregar_ambiente(nombre):
     # Cada ambiente es un vertice del grafo.
     grafo[nombre] = {}
 
-
+# Conecto dos ambientes en ambos sentidos y guardo la distancia.
 def conectar(origen, destino, metros):
     # Al ser no dirigido, guardamos la conexion en ambos sentidos.
     grafo[origen][destino] = metros
     grafo[destino][origen] = metros
 
-
+# Prim: conecto todos los ambientes con el menor peso total, utilizando una cola de prioridad y evitando ciclos.
 def arbol_expansion_minima():
-    # Algoritmo de Prim: conecta todos los ambientes con el menor
-    # total posible de metros de cable.
     inicio = next(iter(grafo))
-    visitados = {inicio}
+    visitados = {inicio} # Registra el primer ambiente visitado.
     pendientes = []
     aristas_arbol = []
     total_metros = 0
 
     for vecino, metros in grafo[inicio].items():
-        heapq.heappush(pendientes, (metros, inicio, vecino))
+        heapq.heappush(pendientes, (metros, inicio, vecino)) # 	Agrega elementos a una cola de prioridad.
 
     while pendientes and len(visitados) < len(grafo):
-        metros, origen, destino = heapq.heappop(pendientes)
+        metros, origen, destino = heapq.heappop(pendientes) # Extrae el elemento de menor prioridad numérica.
         if destino in visitados:
             continue
 
@@ -46,10 +44,10 @@ def arbol_expansion_minima():
 
     return aristas_arbol, total_metros
 
-
+# Dijkstra: encuentro el camino de menor distancia acumulada y reconstruyo el recorrido desde el destino hasta el inicio.
 def camino_mas_corto(inicio, destino):
     # Algoritmo de Dijkstra: busca el camino con menor suma de metros.
-    distancias = {ambiente: float('inf') for ambiente in grafo}
+    distancias = {ambiente: float('inf') for ambiente in grafo} # Representa una distancia inicialmente infinita.
     anteriores = {}
     distancias[inicio] = 0
     pendientes = [(0, inicio)]
@@ -65,7 +63,7 @@ def camino_mas_corto(inicio, destino):
             nueva_distancia = metros_actuales + metros
             if nueva_distancia < distancias[vecino]:
                 distancias[vecino] = nueva_distancia
-                anteriores[vecino] = actual
+                anteriores[vecino] = actual # Guarda desde qué ambiente llegamos al vecino por el mejor camino conocido.
                 heapq.heappush(pendientes, (nueva_distancia, vecino))
 
     if distancias[destino] == float('inf'):
@@ -75,7 +73,7 @@ def camino_mas_corto(inicio, destino):
     camino = [destino]
     while camino[-1] != inicio:
         camino.append(anteriores[camino[-1]])
-    camino.reverse()
+    camino.reverse() # 	Invierte el recorrido reconstruido para mostrarlo desde el origen.
     return camino, distancias[destino]
 
 
@@ -120,7 +118,7 @@ for origen, destino, metros in conexiones:
     conectar(origen, destino, metros)
 
 # Comprobar que se respeten los requisitos de las conexiones.
-assert all(len(vecinos) >= 3 for vecinos in grafo.values())
+assert all(len(vecinos) >= 3 for vecinos in grafo.values()) # 	Verifica que se cumpla una condición; si es falsa, genera un error.
 assert sum(len(vecinos) == 5 for vecinos in grafo.values()) == 2
 
 print('EJERCICIO 14 - GRAFO DE UNA CASA')
