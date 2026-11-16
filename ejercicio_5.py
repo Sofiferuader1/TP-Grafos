@@ -6,23 +6,23 @@ grafo = {}
 tipos = {}
 
 
-def agregar_equipo(nombre, tipo):
+def agregar_equipo(nombre, tipo): # Agrego un equipo al grafo y guardo su tipo.
     grafo[nombre] = {}
     tipos[nombre] = tipo
 
 
-def conectar(a, b, peso):
+def conectar(a, b, peso): # Conecto dos equipos en ambos sentidos porque el grafo es no dirigido.
     grafo[a][b] = peso
     grafo[b][a] = peso
 
 
-def desconectar(a, b):
+def desconectar(a, b): # Elimino la conexión entre dos equipos en ambos sentidos.
     del grafo[a][b]
     del grafo[b][a]
 
-
+# DFS: recorro en profundidad usando recursividad y un conjunto de visitados.
 def profundidad(inicio):
-    visitados = set()
+    visitados = set() # Crea un conjunto para no visitar dos veces el mismo nodo.
     recorrido = []
 
     def visitar(actual):
@@ -35,13 +35,13 @@ def profundidad(inicio):
     visitar(inicio)
     return recorrido
 
-
+# BFS: recorro por niveles usando una cola FIFO y evitando repetir nodos.
 def amplitud(inicio):
     visitados = {inicio}
-    cola = deque([inicio])
+    cola = deque([inicio]) # Crea una cola que contiene el nodo inicial.
     recorrido = []
     while cola:
-        actual = cola.popleft()
+        actual = cola.popleft() # Extrae el primer elemento de la cola.
         recorrido.append(actual)
         for vecino in grafo[actual]:
             if vecino not in visitados:
@@ -49,25 +49,25 @@ def amplitud(inicio):
                 cola.append(vecino)
     return recorrido
 
-
+# Dijkstra: busco el camino de menor peso usando una cola de prioridad.
 def camino_mas_corto(inicio, destino):
     # Dijkstra encuentra el camino de menor peso acumulado.
-    cola = [(0, inicio, [inicio])]
-    distancias = {inicio: 0}
+    cola = [(0, inicio, [inicio])] # La cola guarda el peso acumulado, el nodo actual y el camino recorrido.
+    distancias = {inicio: 0} # distancias registra el menor peso encontrado hasta cada nodo.
     while cola:
-        distancia, actual, camino = heapq.heappop(cola)
+        distancia, actual, camino = heapq.heappop(cola) # Extrae el elemento de menor prioridad numérica, que en este caso corresponde a la menor distancia acumulada.
         if distancia > distancias[actual]:
             continue
         if actual == destino:
             return distancia, camino
         for vecino, peso in grafo[actual].items():
-            nueva = distancia + peso
+            nueva = distancia + peso # Calcula el peso acumulado al avanzar hacia otro equipo.
             if nueva < distancias.get(vecino, float('inf')):
                 distancias[vecino] = nueva
                 heapq.heappush(cola, (nueva, vecino, camino + [vecino]))
-    return float('inf'), []
+    return float('inf'), [] # Representa infinito, usado como distancia inicial cuando no se conoce un camino.
 
-
+# Prim: conecto todos los equipos con el menor peso total, sin formar ciclos.
 def arbol_expansion_minima():
     # Prim conecta todos los equipos con el menor peso total.
     inicio = next(iter(grafo))
@@ -77,13 +77,13 @@ def arbol_expansion_minima():
     heapq.heapify(cola)
     total = 0
     while cola and len(visitados) < len(grafo):
-        peso, origen, destino = heapq.heappop(cola)
+        peso, origen, destino = heapq.heappop(cola) # Extrae el elemento de menor prioridad.
         if destino in visitados:
             continue
         visitados.add(destino)
         aristas.append((origen, destino, peso))
         total += peso
-        for vecino, peso_vecino in grafo[destino].items():
+        for vecino, peso_vecino in grafo[destino].items(): # Recorre los vecinos y sus pesos.
             if vecino not in visitados:
                 heapq.heappush(cola, (peso_vecino, destino, vecino))
     return aristas, total
@@ -147,16 +147,16 @@ print('Peso total:', total)
 # e) Encontrar la PC (no notebook) mas cercana a Guarani.
 print('\ne) PC mas cercana a Guaraní')
 pc = [nombre for nombre, tipo in tipos.items() if tipo == 'pc']
-mejor_pc = min(pc, key=lambda nombre: camino_mas_corto(nombre, 'Guaraní')[0])
+mejor_pc = min(pc, key=lambda nombre: camino_mas_corto(nombre, 'Guaraní')[0]) # Selecciona la PC cuya distancia calculada es menor.
 distancia, camino = camino_mas_corto(mejor_pc, 'Guaraní')
 print(' -> '.join(camino), '| peso:', distancia)
 
 # f) Computadora conectada al Switch 1 mas cercana a MongoDB.
 print('\nf) Computadora del Switch 1 mas cercana a MongoDB')
 computadoras = [nombre for nombre in grafo['Switch 1'] if tipos[nombre] in ('pc', 'notebook')]
-mejor_equipo = min(computadoras, key=lambda nombre: camino_mas_corto(nombre, 'MongoDB')[0])
+mejor_equipo = min(computadoras, key=lambda nombre: camino_mas_corto(nombre, 'MongoDB')[0]) # 	Define una función breve para comparar distancias.
 distancia, camino = camino_mas_corto(mejor_equipo, 'MongoDB')
-print(' -> '.join(camino), '| peso:', distancia)
+print(' -> '.join(camino), '| peso:', distancia) # 	Une los nombres del recorrido para mostrarlos como una ruta.
 
 # g) Mover la impresora del Switch 1 al Router 2 y repetir b).
 # Como el enunciado no indica el nuevo peso, se conserva el valor 22.
